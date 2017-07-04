@@ -7,21 +7,30 @@ import 'whatwg-fetch';
 import IssueAdd from './IssueAdd';
 import IssueFilter from './IssueFilter';
 
-const IssueRow = props => (
-  <tr>
-    <td>
-      <Link to={`/issues/${props.issue._id}`}>
-        {props.issue._id.substr(-4)}
-      </Link>
-    </td>
-    <td>{props.issue.status}</td>
-    <td>{props.issue.owner}</td>
-    <td>{props.issue.created.toDateString()}</td>
-    <td>{props.issue.effort}</td>
-    <td>{props.issue.completionDate ? props.issue.completionDate.toDateString() : ''}</td>
-    <td>{props.issue.title}</td>
-  </tr>
-);
+const IssueRow = (props) => {
+  function onDeleteClick() {
+    props.deleteIssue(props.issue._id);
+  }
+
+  return (
+    <tr>
+      <td>
+        <Link to={`/issues/${props.issue._id}`}>
+          {props.issue._id.substr(-4)}
+        </Link>
+      </td>
+      <td>{props.issue.status}</td>
+      <td>{props.issue.owner}</td>
+      <td>{props.issue.created.toDateString()}</td>
+      <td>{props.issue.effort}</td>
+      <td>{props.issue.completionDate ? props.issue.completionDate.toDateString() : ''}</td>
+      <td>{props.issue.title}</td>
+      <td>
+        <button onClick={onDeleteClick}>Delete</button>
+      </td>
+    </tr>
+  );
+};
 
 IssueRow.propTypes = {
   issue: PropTypes.shape({
@@ -33,10 +42,17 @@ IssueRow.propTypes = {
     completionDate: PropTypes.date,
     title: PropTypes.string,
   }).isRequired,
+  deleteIssue: PropTypes.func.isRequired,
 };
 
 const IssueTable = (props) => {
-  const issueRows = props.issues.map(issue => <IssueRow key={issue._id} issue={issue} />);
+  const issueRows = props.issues.map(issue =>
+    (<IssueRow
+      key={issue._id}
+      issue={issue}
+      deleteIssue={props.deleteIssue}
+    />),
+  );
   return (
     <table className="bordered-table">
       <thead>
@@ -48,6 +64,7 @@ const IssueTable = (props) => {
           <th>Effort</th>
           <th>Completion Date</th>
           <th>Title</th>
+          <th />
         </tr>
       </thead>
       <tbody>
@@ -59,6 +76,7 @@ const IssueTable = (props) => {
 
 IssueTable.propTypes = {
   issues: PropTypes.array.isRequired, // eslint-disable-line react/forbid-prop-types
+  deleteIssue: PropTypes.func.isRequired,
 };
 
 class IssueList extends React.Component {
@@ -67,6 +85,7 @@ class IssueList extends React.Component {
     this.state = { issues: [] };
     this.createIssue = this.createIssue.bind(this);
     this.setFilter = this.setFilter.bind(this);
+    this.deleteIssue = this.deleteIssue.bind(this);
   }
 
   componentDidMount() {
@@ -82,6 +101,13 @@ class IssueList extends React.Component {
       return;
     }
     this.loadData();
+  }
+
+  setFilter(search) {
+    this.props.history.push({
+      pathname: this.props.location.pathname,
+      search: queryString.stringify(search),
+    });
   }
 
   loadData() {
@@ -130,12 +156,13 @@ class IssueList extends React.Component {
     });
   }
 
-  setFilter(search) {
-    console.log(queryString.stringify(search));
-    this.props.history.push({
-      pathname: this.props.location.pathname,
-      search: queryString.stringify(search),
-    });
+  deleteIssue(id) {
+    fetch(`/api/issues/${id}`, { method: 'DELETE' })
+      .then((response) => {
+        if (!response.ok) alert('Failed to delete issue');
+        else this.loadData();
+      })
+      .catch(err => alert(`Error in deleting issue: ${err.message}`));
   }
 
   render() {
@@ -146,7 +173,7 @@ class IssueList extends React.Component {
           initFilter={queryString.parse(this.props.location.search)}
         />
         <hr />
-        <IssueTable issues={this.state.issues} />
+        <IssueTable issues={this.state.issues} deleteIssue={this.deleteIssue} />
         <hr />
         <IssueAdd createIssue={this.createIssue} />
       </div>

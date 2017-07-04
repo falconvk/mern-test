@@ -160,6 +160,7 @@ export default class IssueEdit extends React.Component {
           <br />
           {validationMessage}
           <button type="submit">Submit</button>
+          <br />
           <Link to="/issues">Back to issue list</Link>
         </form>
       </div>
