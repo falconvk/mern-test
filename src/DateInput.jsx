@@ -83,5 +83,5 @@ DateInput.propTypes = {
   value: PropTypes.object, // eslint-disable-line react/forbid-prop-types
   onChange: PropTypes.func.isRequired,
   onValidityChange: PropTypes.func,
-  name: React.PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
 };
