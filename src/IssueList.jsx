@@ -3,7 +3,7 @@ import { Link, withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import queryString from 'query-string';
 import 'whatwg-fetch';
-import { Button, Glyphicon } from 'react-bootstrap';
+import { Button, Glyphicon, Table, Panel } from 'react-bootstrap';
 
 import IssueAdd from './IssueAdd';
 import IssueFilter from './IssueFilter';
@@ -57,7 +57,7 @@ const IssueTable = (props) => {
     />),
   );
   return (
-    <table className="bordered-table">
+    <Table bordered condensed hover responsive>
       <thead>
         <tr>
           <th>Id</th>
@@ -73,7 +73,7 @@ const IssueTable = (props) => {
       <tbody>
         {issueRows}
       </tbody>
-    </table>
+    </Table>
   );
 };
 
@@ -171,10 +171,12 @@ class IssueList extends React.Component {
   render() {
     return (
       <div>
-        <IssueFilter
-          setFilter={this.setFilter}
-          initFilter={queryString.parse(this.props.location.search)}
-        />
+        <Panel collapsible header="Filter">
+          <IssueFilter
+            setFilter={this.setFilter}
+            initFilter={queryString.parse(this.props.location.search)}
+          />
+        </Panel>
         <hr />
         <IssueTable issues={this.state.issues} deleteIssue={this.deleteIssue} />
         <hr />
