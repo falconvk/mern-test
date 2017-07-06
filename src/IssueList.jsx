@@ -177,9 +177,7 @@ class IssueList extends React.Component {
             initFilter={queryString.parse(this.props.location.search)}
           />
         </Panel>
-        <hr />
         <IssueTable issues={this.state.issues} deleteIssue={this.deleteIssue} />
-        <hr />
         <IssueAdd createIssue={this.createIssue} />
       </div>
     );
