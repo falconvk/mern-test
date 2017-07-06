@@ -59,8 +59,8 @@ const App = props => (
       <hr />
       <h5>
         <small>
-          Full source code available at
-          <a href="https://github.com/falconvk/mern-test">this GitHub repository</a>.
+          Full source code available
+          at <a href="https://github.com/falconvk/mern-test">this GitHub repository</a>.
         </small>
       </h5>
     </div>
