@@ -17,6 +17,7 @@ import {
 } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 
+import IssueAddNavItem from './IssueAddNavItem';
 import IssueList from './IssueList';
 import IssueEdit from './IssueEdit';
 
@@ -37,7 +38,7 @@ const Header = () => (
       </LinkContainer>
     </Nav>
     <Nav pullRight>
-      <NavItem><Glyphicon glyph="plus" /> Create Issue</NavItem>
+      <IssueAddNavItem />
       <NavDropdown
         id="user-dropdown"
         title={<Glyphicon glyph="option-horizontal" />}
@@ -68,7 +69,7 @@ const App = props => (
 );
 
 App.propTypes = {
-  children: PropTypes.array.isRequired, // eslint-disable-line react/forbid-prop-types
+  children: PropTypes.array.isRequired,
 };
 
 const RoutedApp = () => (

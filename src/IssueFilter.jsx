@@ -136,5 +136,5 @@ export default class IssueFilter extends React.Component {
 
 IssueFilter.propTypes = {
   setFilter: PropTypes.func.isRequired,
-  initFilter: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
+  initFilter: PropTypes.object.isRequired,
 };

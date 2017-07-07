@@ -258,5 +258,5 @@ export default class IssueEdit extends React.Component {
 }
 
 IssueEdit.propTypes = {
-  match: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
+  match: PropTypes.object.isRequired,
 };

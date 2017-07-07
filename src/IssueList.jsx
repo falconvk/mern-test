@@ -5,7 +5,6 @@ import queryString from 'query-string';
 import 'whatwg-fetch';
 import { Button, Glyphicon, Table, Panel } from 'react-bootstrap';
 
-import IssueAdd from './IssueAdd';
 import IssueFilter from './IssueFilter';
 import Toast from './Toast';
 
@@ -79,7 +78,7 @@ const IssueTable = (props) => {
 };
 
 IssueTable.propTypes = {
-  issues: PropTypes.array.isRequired, // eslint-disable-line react/forbid-prop-types
+  issues: PropTypes.array.isRequired,
   deleteIssue: PropTypes.func.isRequired,
 };
 
@@ -92,7 +91,6 @@ class IssueList extends React.Component {
       toastMessage: '',
       toastType: 'danger',
     };
-    this.createIssue = this.createIssue.bind(this);
     this.setFilter = this.setFilter.bind(this);
     this.deleteIssue = this.deleteIssue.bind(this);
     this.showError = this.showError.bind(this);
@@ -144,33 +142,6 @@ class IssueList extends React.Component {
       });
   }
 
-  createIssue(newIssue) {
-    fetch('/api/issues', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newIssue),
-    })
-      .then((response) => {
-        if (response.ok) {
-          response.json().then((updatedIssue) => {
-            updatedIssue.created = new Date(updatedIssue.created);
-            if (updatedIssue.completionDate) {
-              updatedIssue.completionDate = new Date(updatedIssue.completionDate);
-            }
-            const newIssues = this.state.issues.concat(updatedIssue);
-            this.setState({ issues: newIssues });
-          });
-        } else {
-          response.json().then((error) => {
-            this.showError(`Failed to add issue: ${error.message}`);
-          });
-        }
-      })
-      .catch((err) => {
-        this.showError(`Error in sending data to server: ${err.message}`);
-      });
-  }
-
   deleteIssue(id) {
     fetch(`/api/issues/${id}`, { method: 'DELETE' })
       .then((response) => {
@@ -198,7 +169,6 @@ class IssueList extends React.Component {
           />
         </Panel>
         <IssueTable issues={this.state.issues} deleteIssue={this.deleteIssue} />
-        <IssueAdd createIssue={this.createIssue} />
         <Toast
           showing={this.state.toastVisible}
           message={this.state.toastMessage}
@@ -211,12 +181,12 @@ class IssueList extends React.Component {
 }
 
 IssueList.propTypes = {
-  location: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
-  history: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
+  location: PropTypes.object.isRequired,
+  history: PropTypes.object.isRequired,
 };
 
 IssueList.contextTypes = {
-  router: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
+  router: PropTypes.object.isRequired,
 };
 
 export default withRouter(IssueList);

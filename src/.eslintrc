@@ -3,6 +3,7 @@
     "browser": true
   },
   "rules": {
-//    "no-alert": "off"
+    //    "no-alert": "off"
+    "react/forbid-prop-types": "off"
   }
 }
