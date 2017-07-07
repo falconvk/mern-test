@@ -15,6 +15,7 @@ import { LinkContainer } from 'react-router-bootstrap';
 
 import NumInput from './NumInput';
 import DateInput from './DateInput';
+import Toast from './Toast';
 
 export default class IssueEdit extends React.Component {
   constructor() {
@@ -31,9 +32,15 @@ export default class IssueEdit extends React.Component {
       },
       invalidFields: {},
       showingValidation: false,
+      toastVisible: false,
+      toastMessage: '',
+      toastType: 'success',
     };
     this.dismissValidation = this.dismissValidation.bind(this);
     this.showValidation = this.showValidation.bind(this);
+    this.showSuccess = this.showSuccess.bind(this);
+    this.showError = this.showError.bind(this);
+    this.dismissToast = this.dismissToast.bind(this);
     this.onChange = this.onChange.bind(this);
     this.onValidityChange = this.onValidityChange.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
@@ -87,14 +94,14 @@ export default class IssueEdit extends React.Component {
                 updatedIssue.completionDate = new Date(updatedIssue.completionDate);
               }
               this.setState({ issue: updatedIssue });
-              alert('Updated issue successfully.');
+              this.showSuccess('Updated issue successfully.');
             });
         } else {
           response.json()
-            .then(error => alert(`Failed to update issue: ${error.message}`));
+            .then(error => this.showError(`Failed to update issue: ${error.message}`));
         }
       })
-      .catch(err => alert(`Error in sending data to server: ${err.message}`));
+      .catch(err => this.showError(`Error in sending data to server: ${err.message}`));
   }
 
   loadData() {
@@ -111,10 +118,11 @@ export default class IssueEdit extends React.Component {
               this.setState({ issue });
             });
         } else {
-          response.json().then(error => alert(`Failed to fetch issue: ${error.message}`));
+          response.json()
+            .then(error => this.showError(`Failed to fetch issue: ${error.message}`));
         }
       })
-      .catch(error => alert(`Error in fetching data from server: ${error.message}`));
+      .catch(error => this.showError(`Error in fetching data from server: ${error.message}`));
   }
 
   showValidation() {
@@ -123,6 +131,18 @@ export default class IssueEdit extends React.Component {
 
   dismissValidation() {
     this.setState({ showingValidation: false });
+  }
+
+  showSuccess(message) {
+    this.setState({ toastVisible: true, toastMessage: message, toastType: 'success' });
+  }
+
+  showError(message) {
+    this.setState({ toastVisible: true, toastMessage: message, toastType: 'danger' });
+  }
+
+  dismissToast() {
+    this.setState({ toastVisible: false });
   }
 
   render() {
@@ -226,6 +246,12 @@ export default class IssueEdit extends React.Component {
             <Col smOffset={3} sm={9}>{validationMessage}</Col>
           </FormGroup>
         </Form>
+        <Toast
+          showing={this.state.toastVisible}
+          message={this.state.toastMessage}
+          onDismiss={this.dismissToast}
+          bsStyle={this.state.toastType}
+        />
       </Panel>
     );
   }

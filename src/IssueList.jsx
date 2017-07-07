@@ -7,6 +7,7 @@ import { Button, Glyphicon, Table, Panel } from 'react-bootstrap';
 
 import IssueAdd from './IssueAdd';
 import IssueFilter from './IssueFilter';
+import Toast from './Toast';
 
 const IssueRow = (props) => {
   function onDeleteClick() {
@@ -85,10 +86,17 @@ IssueTable.propTypes = {
 class IssueList extends React.Component {
   constructor() {
     super();
-    this.state = { issues: [] };
+    this.state = {
+      issues: [],
+      toastVisible: false,
+      toastMessage: '',
+      toastType: 'danger',
+    };
     this.createIssue = this.createIssue.bind(this);
     this.setFilter = this.setFilter.bind(this);
     this.deleteIssue = this.deleteIssue.bind(this);
+    this.showError = this.showError.bind(this);
+    this.dismissToast = this.dismissToast.bind(this);
   }
 
   componentDidMount() {
@@ -114,24 +122,26 @@ class IssueList extends React.Component {
   }
 
   loadData() {
-    fetch(`/api/issues${this.props.location.search}`).then((response) => {
-      if (response.ok) {
-        response.json().then((data) => {
-          // console.log('Total count of records: ', data._metadata.total_count);
-          data.records.forEach((issue) => {
-            issue.created = new Date(issue.created);
-            if (issue.completionDate) issue.completionDate = new Date(issue.completionDate);
+    fetch(`/api/issues${this.props.location.search}`)
+      .then((response) => {
+        if (response.ok) {
+          response.json().then((data) => {
+            // console.log('Total count of records: ', data._metadata.total_count);
+            data.records.forEach((issue) => {
+              issue.created = new Date(issue.created);
+              if (issue.completionDate) issue.completionDate = new Date(issue.completionDate);
+            });
+            this.setState({ issues: data.records });
           });
-          this.setState({ issues: data.records });
-        });
-      } else {
-        response.json().then((error) => {
-          alert(`Failed to fetch issues:  ${error.message}`); // eslint-disable-line no-alert
-        });
-      }
-    }).catch((err) => {
-      alert(`Error in fetching data from server: ${err}`); // eslint-disable-line no-alert
-    });
+        } else {
+          response.json().then((error) => {
+            this.showError(`Failed to fetch issues:  ${error.message}`);
+          });
+        }
+      })
+      .catch((err) => {
+        this.showError(`Error in fetching data from server: ${err}`);
+      });
   }
 
   createIssue(newIssue) {
@@ -139,33 +149,43 @@ class IssueList extends React.Component {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newIssue),
-    }).then((response) => {
-      if (response.ok) {
-        response.json().then((updatedIssue) => {
-          updatedIssue.created = new Date(updatedIssue.created);
-          if (updatedIssue.completionDate) {
-            updatedIssue.completionDate = new Date(updatedIssue.completionDate);
-          }
-          const newIssues = this.state.issues.concat(updatedIssue);
-          this.setState({ issues: newIssues });
-        });
-      } else {
-        response.json().then((error) => {
-          alert(`Failed to add issue: ${error.message}`); // eslint-disable-line no-alert
-        });
-      }
-    }).catch((err) => {
-      alert(`Error in sending data to server: ${err.message}`); // eslint-disable-line no-alert
-    });
+    })
+      .then((response) => {
+        if (response.ok) {
+          response.json().then((updatedIssue) => {
+            updatedIssue.created = new Date(updatedIssue.created);
+            if (updatedIssue.completionDate) {
+              updatedIssue.completionDate = new Date(updatedIssue.completionDate);
+            }
+            const newIssues = this.state.issues.concat(updatedIssue);
+            this.setState({ issues: newIssues });
+          });
+        } else {
+          response.json().then((error) => {
+            this.showError(`Failed to add issue: ${error.message}`);
+          });
+        }
+      })
+      .catch((err) => {
+        this.showError(`Error in sending data to server: ${err.message}`);
+      });
   }
 
   deleteIssue(id) {
     fetch(`/api/issues/${id}`, { method: 'DELETE' })
       .then((response) => {
-        if (!response.ok) alert('Failed to delete issue');
+        if (!response.ok) this.showError('Failed to delete issue');
         else this.loadData();
       })
-      .catch(err => alert(`Error in deleting issue: ${err.message}`));
+      .catch(err => this.showError(`Error in deleting issue: ${err.message}`));
+  }
+
+  showError(message) {
+    this.setState({ toastVisible: true, toastMessage: message, toastType: 'danger' });
+  }
+
+  dismissToast() {
+    this.setState({ toastVisible: false });
   }
 
   render() {
@@ -179,6 +199,12 @@ class IssueList extends React.Component {
         </Panel>
         <IssueTable issues={this.state.issues} deleteIssue={this.deleteIssue} />
         <IssueAdd createIssue={this.createIssue} />
+        <Toast
+          showing={this.state.toastVisible}
+          message={this.state.toastMessage}
+          onDismiss={this.dismissToast}
+          bsStyle={this.state.toastType}
+        />
       </div>
     );
   }
