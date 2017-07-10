@@ -82,5 +82,6 @@ DateInput.propTypes = {
   value: PropTypes.object,
   onChange: PropTypes.func.isRequired,
   onValidityChange: PropTypes.func,
-  name: PropTypes.string.isRequired,
+  // name prop is directly passed through
+  name: PropTypes.string.isRequired, // eslint-disable-line react/no-unused-prop-types
 };
