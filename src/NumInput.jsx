@@ -45,6 +45,10 @@ export default class NumInput extends React.Component {
   }
 }
 
+NumInput.defaultProps = {
+  value: undefined,
+};
+
 NumInput.propTypes = {
   value: PropTypes.number,
   onChange: PropTypes.func.isRequired,

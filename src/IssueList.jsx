@@ -3,9 +3,10 @@ import { Link, withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import queryString from 'query-string';
 import 'whatwg-fetch';
+import { Button, Glyphicon, Table, Panel } from 'react-bootstrap';
 
-import IssueAdd from './IssueAdd';
 import IssueFilter from './IssueFilter';
+import Toast from './Toast';
 
 const IssueRow = (props) => {
   function onDeleteClick() {
@@ -26,7 +27,9 @@ const IssueRow = (props) => {
       <td>{props.issue.completionDate ? props.issue.completionDate.toDateString() : ''}</td>
       <td>{props.issue.title}</td>
       <td>
-        <button onClick={onDeleteClick}>Delete</button>
+        <Button bsSize="xsmall" onClick={onDeleteClick}>
+          <Glyphicon glyph="trash" />
+        </Button>
       </td>
     </tr>
   );
@@ -54,7 +57,7 @@ const IssueTable = (props) => {
     />),
   );
   return (
-    <table className="bordered-table">
+    <Table bordered condensed hover responsive>
       <thead>
         <tr>
           <th>Id</th>
@@ -70,22 +73,28 @@ const IssueTable = (props) => {
       <tbody>
         {issueRows}
       </tbody>
-    </table>
+    </Table>
   );
 };
 
 IssueTable.propTypes = {
-  issues: PropTypes.array.isRequired, // eslint-disable-line react/forbid-prop-types
+  issues: PropTypes.array.isRequired,
   deleteIssue: PropTypes.func.isRequired,
 };
 
 class IssueList extends React.Component {
   constructor() {
     super();
-    this.state = { issues: [] };
-    this.createIssue = this.createIssue.bind(this);
+    this.state = {
+      issues: [],
+      toastVisible: false,
+      toastMessage: '',
+      toastType: 'danger',
+    };
     this.setFilter = this.setFilter.bind(this);
     this.deleteIssue = this.deleteIssue.bind(this);
+    this.showError = this.showError.bind(this);
+    this.dismissToast = this.dismissToast.bind(this);
   }
 
   componentDidMount() {
@@ -111,83 +120,73 @@ class IssueList extends React.Component {
   }
 
   loadData() {
-    fetch(`/api/issues${this.props.location.search}`).then((response) => {
-      if (response.ok) {
-        response.json().then((data) => {
-          // console.log('Total count of records: ', data._metadata.total_count);
-          data.records.forEach((issue) => {
-            issue.created = new Date(issue.created);
-            if (issue.completionDate) issue.completionDate = new Date(issue.completionDate);
+    fetch(`/api/issues${this.props.location.search}`)
+      .then((response) => {
+        if (response.ok) {
+          response.json().then((data) => {
+            // console.log('Total count of records: ', data._metadata.total_count);
+            data.records.forEach((issue) => {
+              issue.created = new Date(issue.created);
+              if (issue.completionDate) issue.completionDate = new Date(issue.completionDate);
+            });
+            this.setState({ issues: data.records });
           });
-          this.setState({ issues: data.records });
-        });
-      } else {
-        response.json().then((error) => {
-          alert(`Failed to fetch issues:  ${error.message}`); // eslint-disable-line no-alert
-        });
-      }
-    }).catch((err) => {
-      alert(`Error in fetching data from server: ${err}`); // eslint-disable-line no-alert
-    });
-  }
-
-  createIssue(newIssue) {
-    fetch('/api/issues', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newIssue),
-    }).then((response) => {
-      if (response.ok) {
-        response.json().then((updatedIssue) => {
-          updatedIssue.created = new Date(updatedIssue.created);
-          if (updatedIssue.completionDate) {
-            updatedIssue.completionDate = new Date(updatedIssue.completionDate);
-          }
-          const newIssues = this.state.issues.concat(updatedIssue);
-          this.setState({ issues: newIssues });
-        });
-      } else {
-        response.json().then((error) => {
-          alert(`Failed to add issue: ${error.message}`); // eslint-disable-line no-alert
-        });
-      }
-    }).catch((err) => {
-      alert(`Error in sending data to server: ${err.message}`); // eslint-disable-line no-alert
-    });
+        } else {
+          response.json().then((error) => {
+            this.showError(`Failed to fetch issues:  ${error.message}`);
+          });
+        }
+      })
+      .catch((err) => {
+        this.showError(`Error in fetching data from server: ${err}`);
+      });
   }
 
   deleteIssue(id) {
     fetch(`/api/issues/${id}`, { method: 'DELETE' })
       .then((response) => {
-        if (!response.ok) alert('Failed to delete issue');
+        if (!response.ok) this.showError('Failed to delete issue');
         else this.loadData();
       })
-      .catch(err => alert(`Error in deleting issue: ${err.message}`));
+      .catch(err => this.showError(`Error in deleting issue: ${err.message}`));
+  }
+
+  showError(message) {
+    this.setState({ toastVisible: true, toastMessage: message, toastType: 'danger' });
+  }
+
+  dismissToast() {
+    this.setState({ toastVisible: false });
   }
 
   render() {
     return (
       <div>
-        <IssueFilter
-          setFilter={this.setFilter}
-          initFilter={queryString.parse(this.props.location.search)}
-        />
-        <hr />
+        <Panel collapsible header="Filter">
+          <IssueFilter
+            setFilter={this.setFilter}
+            initFilter={queryString.parse(this.props.location.search)}
+          />
+        </Panel>
         <IssueTable issues={this.state.issues} deleteIssue={this.deleteIssue} />
-        <hr />
-        <IssueAdd createIssue={this.createIssue} />
+        <Toast
+          showing={this.state.toastVisible}
+          message={this.state.toastMessage}
+          onDismiss={this.dismissToast}
+          bsStyle={this.state.toastType}
+        />
       </div>
     );
   }
 }
 
 IssueList.propTypes = {
-  location: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
-  history: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
+  location: PropTypes.object.isRequired,
+  history: PropTypes.object.isRequired,
 };
 
 IssueList.contextTypes = {
-  router: PropTypes.object.isRequired, // eslint-disable-line react/forbid-prop-types
+  router: PropTypes.object.isRequired,
 };
 
 export default withRouter(IssueList);

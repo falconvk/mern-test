@@ -7,31 +7,69 @@ import {
   Route,
   Switch,
 } from 'react-router-dom';
+import {
+  Navbar,
+  Nav,
+  NavItem,
+  NavDropdown,
+  MenuItem,
+  Glyphicon,
+} from 'react-bootstrap';
+import { LinkContainer } from 'react-router-bootstrap';
 
+import IssueAddNavItem from './IssueAddNavItem';
 import IssueList from './IssueList';
 import IssueEdit from './IssueEdit';
 
 const contentNode = document.getElementById('contents');
 const NoMatch = () => <p>Page Not Found</p>;
 
+const Header = () => (
+  <Navbar fluid>
+    <Navbar.Header>
+      <Navbar.Brand>Issue Tracker</Navbar.Brand>
+    </Navbar.Header>
+    <Nav>
+      <LinkContainer to="/issues">
+        <NavItem>Issues</NavItem>
+      </LinkContainer>
+      <LinkContainer to="/reports">
+        <NavItem>Reports</NavItem>
+      </LinkContainer>
+    </Nav>
+    <Nav pullRight>
+      <IssueAddNavItem />
+      <NavDropdown
+        id="user-dropdown"
+        title={<Glyphicon glyph="option-horizontal" />}
+        noCaret
+      >
+        <MenuItem>Logout</MenuItem>
+      </NavDropdown>
+    </Nav>
+  </Navbar>
+);
+
 const App = props => (
   <div>
-    <div className="header">
-      <h1>Issue Tracker</h1>
-    </div>
-    <div className="contents">
+    <Header />
+    <div className="container-fluid">
       <Switch>
         {props.children}
       </Switch>
-    </div>
-    <div className="footer">
-      Lorem Ipsum Footer
+      <hr />
+      <h5>
+        <small>
+          Full source code available
+          at <a href="https://github.com/falconvk/mern-test">this GitHub repository</a>.
+        </small>
+      </h5>
     </div>
   </div>
 );
 
 App.propTypes = {
-  children: PropTypes.array.isRequired, // eslint-disable-line react/forbid-prop-types
+  children: PropTypes.array.isRequired,
 };
 
 const RoutedApp = () => (
