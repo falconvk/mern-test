@@ -3,7 +3,7 @@ const webpack = require('webpack');
 
 module.exports = {
   entry: {
-    app: ['./src/App.jsx'],
+    app: ['./client/Client.jsx'],
     vendor: ['react', 'react-dom', 'whatwg-fetch', 'react-router', 'react-router-bootstrap'],
   },
   output: {
@@ -40,7 +40,7 @@ module.exports = {
       colors: true,
     },
     proxy: {
-      '/api/*': {
+      '**': {
         target: 'http://localhost:3000',
       },
     },

@@ -1,14 +1,19 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import { MongoClient, ObjectId } from 'mongodb';
-import 'babel-polyfill';
+import 'babel-polyfill'; // import once in application to enable ES2015 objects & methods
 import SourceMapSupport from 'source-map-support';
-import path from 'path';
 
+// Import Helpers
 import Issue from './issue';
 
+// Server Rendering
+import renderedPageRouter from './renderedPageRouter';
+
+// Set up Source Map Support
 SourceMapSupport.install();
 
+// Set up express server
 const app = express();
 app.use(express.static('static'));
 app.use(bodyParser.json());
@@ -148,6 +153,4 @@ app.delete('/api/issues/:id', (req, res) => {
     });
 });
 
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve('static/index.html'));
-});
+app.use('/', renderedPageRouter);
